@@ -21,18 +21,15 @@ public class Game {
 	int maxDepth = 8;
 	int count = 0;
 	boolean input = false;
-	boolean won = false;
 	
 	JFrame window = new JFrame();
 	JPanel gamePanel = new JPanel();
 	JPanel info = new JPanel();
-	JPanel selection = new JPanel();
 	JPanel result = new JPanel();
 	JButton playAgain = new JButton();
 	JButton[] slot = new JButton[7];
 	JLabel[][] chip = new JLabel[6][7];
 	JLabel winner =  new JLabel();
-	JLabel spongebob = new JLabel();
 	JLabel stat = new JLabel();
 	
 	public Game() {
@@ -50,19 +47,23 @@ public class Game {
 	}
 	
 	public void run() {
-		while (won == false) {
-			System.out.println(input);
+		while (true) {
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			if (input == true) {
 				place(ai, getBestMove());
 				count++;
 				updateBoard();
+				stat.setText("Player's turn to move!");
 				if (checkWin(ai) == true) {
 					endGame(ai);
 				}
 				if (count == 42) {
 					endGame('.');
 				}
-				stat.setText("Player's turn to move!");
 				input = false;
 			}
 		}
@@ -84,13 +85,13 @@ public class Game {
 							place(human, Integer.valueOf(action));
 							count++;
 							updateBoard();
+							stat.setText("AI is thinking...");
 							if (checkWin(human) == true) {
 								endGame(human);
 							}
 							if (count == 42) {
 								endGame('.');
 							}
-							stat.setText("AI is thinking...");
 							input = true;
 						}
 					}
@@ -104,7 +105,6 @@ public class Game {
 		window.getContentPane().setBackground(Color.white);
 		window.setLayout(null);
 		window.setResizable(false);
-		
 		
 		info.setBounds(8, 8, 712, 64);
 		info.setBackground(new Color(226, 226, 226));
@@ -171,9 +171,7 @@ public class Game {
 		boolean placed = false;
 		int row = 5;
 		if (col >= 0 && col <= 7) {
-			if (checkValid(col, 0) == false) {
-				System.out.println("Column full!");
-			} else {
+			if (checkValid(col, 0) == true) {
 				while (placed == false) {
 					if (checkValid(col, row) == true) {
 						board[row][col] = user;
@@ -182,7 +180,7 @@ public class Game {
 					} else {
 						row--;
 					}
-				}
+				} 
 			}
 		}
 		return placed;
@@ -289,11 +287,11 @@ public class Game {
 			i.setVisible(false);
 		}
 		if (user == 'X') {
-			winner.setText("Player Red has won!");
-			stat.setText("Player Red has won!");
+			winner.setText("Player has won the game!");
+			stat.setText("Player has won!");
 		} else if (user == 'O'){
-			winner.setText("Player Blue has won!");
-			stat.setText("Player Blue has won!");
+			winner.setText("AI has won the game!");
+			stat.setText("Ai has won!");
 		} else {
 			stat.setText("Tie!");
 			winner.setText("Game over! Board is full!");
@@ -304,7 +302,7 @@ public class Game {
 	
 	public void resetGame() {
 		count = 0;
-		stat.setText("Player Red's turn to move!");
+		stat.setText("Player's turn to move!");
 		result.setVisible(false);
 		for (JButton i: slot) {
 			i.setVisible(true);
@@ -341,7 +339,6 @@ public class Game {
 		for (int i = 0; i < moves.size(); i++) {
 			place(ai, moves.get(i));
 			int score = minimax(0, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
-			System.out.println("Column " + i + " " + ":" + score);
 			if (score < bestScore) {
 				bestScore = score;
 				bestMoves.clear();

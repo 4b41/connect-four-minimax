@@ -24,11 +24,14 @@ public class Game {
 	
 	JFrame window = new JFrame();
 	JPanel gamePanel = new JPanel();
+	JPanel selectPanel = new JPanel();
 	JPanel info = new JPanel();
 	JPanel result = new JPanel();
+	JButton[] selectColor = new JButton[2];
 	JButton playAgain = new JButton();
 	JButton[] slot = new JButton[7];
 	JLabel[][] chip = new JLabel[6][7];
+	JLabel select = new JLabel();
 	JLabel winner =  new JLabel();
 	JLabel stat = new JLabel();
 	
@@ -58,11 +61,11 @@ public class Game {
 				count++;
 				updateBoard();
 				stat.setText("Player's turn to move!");
-				if (checkWin(ai) == true) {
-					endGame(ai);
-				}
 				if (count == 42) {
 					endGame('.');
+				}
+				if (checkWin(ai) == true) {
+					endGame(ai);
 				}
 				input = false;
 			}
@@ -78,6 +81,22 @@ public class Game {
 				String action = e.getActionCommand();
 				if (action.equals("retry")) {
 					resetGame();
+				} else if (action.equals("red")) {
+					for (JButton i: slot) {
+						i.setVisible(true);
+						selectPanel.setVisible(false);
+						human = 'X';
+						ai = 'O';
+					}
+					
+				} else if (action.equals("blue")) {
+					for (JButton i: slot) {
+						i.setVisible(true);
+						selectPanel.setVisible(false);
+						human = 'O';
+						ai = 'X';
+						input = true;
+					}
 				} else {
 					if (place(human, Integer.valueOf(action)) == true) {
 						if (input == false) {
@@ -86,13 +105,14 @@ public class Game {
 							count++;
 							updateBoard();
 							stat.setText("AI is thinking...");
-							if (checkWin(human) == true) {
-								endGame(human);
-							}
 							if (count == 42) {
 								endGame('.');
 							}
-							input = true;
+							if (checkWin(human) == true) {
+								endGame(human);
+							} else {
+								input = true;
+							}
 						}
 					}
 					
@@ -106,6 +126,15 @@ public class Game {
 		window.setLayout(null);
 		window.setResizable(false);
 		
+		selectPanel.setBounds(210,360,300,150);
+		selectPanel.setBackground(new Color(206, 206, 206));
+		selectPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+		window.add(selectPanel);
+		
+		select.setFont(new Font("Arial", Font.PLAIN, 30));
+		select.setText("Choose a color");
+		selectPanel.add(select);
+		
 		info.setBounds(8, 8, 712, 64);
 		info.setBackground(new Color(226, 226, 226));
 		info.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -114,7 +143,7 @@ public class Game {
 		stat.setText("Player's turn to move!");
 		info.add(stat);
 		
-		result.setBounds(262,350,200,100);
+		result.setBounds(262,400,200,100);
 		result.setBackground(new Color(206, 206, 206));
 		result.setBorder(BorderFactory.createLineBorder(Color.black));
 		result.setVisible(false);
@@ -134,6 +163,20 @@ public class Game {
 		gamePanel.setLayout(new GridLayout(7,7));
 		window.add(gamePanel);
 		
+		
+		selectColor[0] = new JButton();
+		selectColor[1] = new JButton();
+		selectColor[0].setText("Red player (goes first)");
+		selectColor[1].setText("Blue player (goes second)");
+		selectColor[0].addActionListener(click);
+		selectColor[1].addActionListener(click);
+		selectColor[0].setActionCommand("red");
+		selectColor[1].setActionCommand("blue");
+		selectColor[0].setFocusable(false);
+		selectColor[1].setFocusable(false);
+		selectPanel.add(selectColor[0]);
+		selectPanel.add(selectColor[1]);
+		
 		for(int i = 0; i < 7; i++) {
 			slot[i] = new JButton();
 			slot[i].setBackground(new Color(220,220,220));
@@ -143,6 +186,7 @@ public class Game {
 			slot[i].addActionListener(click);
 			slot[i].setActionCommand("" + i);
 			slot[i].setRolloverEnabled(true);
+			slot[i].setVisible(false);
 			gamePanel.add(slot[i]);
 		}
 		
@@ -286,10 +330,10 @@ public class Game {
 		for (JButton i: slot) {
 			i.setVisible(false);
 		}
-		if (user == 'X') {
+		if (user == human) {
 			winner.setText("Player has won the game!");
 			stat.setText("Player has won!");
-		} else if (user == 'O'){
+		} else if (user == ai){
 			winner.setText("AI has won the game!");
 			stat.setText("Ai has won!");
 		} else {
@@ -304,9 +348,7 @@ public class Game {
 		count = 0;
 		stat.setText("Player's turn to move!");
 		result.setVisible(false);
-		for (JButton i: slot) {
-			i.setVisible(true);
-		}
+		selectPanel.setVisible(true);
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[0].length; j++) {
 				board[i][j] = '.';

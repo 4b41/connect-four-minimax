@@ -18,8 +18,8 @@ public class Game {
 	char[][] board = new char[6][7];
 	char human = 'X';
 	char ai = 'O';
-	int maxDepth = 8;
-	int count = 0;
+	int maxDepth = 2;
+	int turn = 0;
 	boolean input = false;
 	
 	JFrame window = new JFrame();
@@ -28,7 +28,8 @@ public class Game {
 	JPanel info = new JPanel();
 	JPanel result = new JPanel();
 	JButton[] selectColor = new JButton[2];
-	JButton playAgain = new JButton();
+	JButton[] selectDiff = new JButton[4];
+ 	JButton playAgain = new JButton();
 	JButton[] slot = new JButton[7];
 	JLabel[][] chip = new JLabel[6][7];
 	JLabel select = new JLabel();
@@ -58,10 +59,10 @@ public class Game {
 			}
 			if (input == true) {
 				place(ai, getBestMove());
-				count++;
+				turn++;
 				updateBoard();
 				stat.setText("Player's turn to move!");
-				if (count == 42) {
+				if (turn == 42) {
 					endGame('.');
 				}
 				if (checkWin(ai) == true) {
@@ -72,50 +73,77 @@ public class Game {
 		}
 	}
 	
-	
 	public void createUI() {
+		
+		ActionListener menu = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e){
+				String action = e.getActionCommand();
+				
+				switch(action) {
+				case "easy":
+					select.setText("Choose your difficulty! (Current: Easy)");
+					maxDepth = 2;
+					break;
+				case "medium":
+					select.setText("Choose your difficulty! (Current: Medium)");
+					maxDepth = 4;
+					break;
+				case "hard":
+					select.setText("Choose your difficulty! (Current: Hard)");
+					maxDepth = 6;
+					break;
+				case "expert":
+					select.setText("Choose your difficulty! (Current: Expert)");
+					maxDepth = 8;
+					break;
+				case "red":
+					stat.setText("Player's turn to move!");
+					for (JButton i: slot) {
+						i.setVisible(true);
+					}
+					selectPanel.setVisible(false);
+					human = 'X';
+					ai = 'O';
+					break;
+				case "blue":
+					stat.setText("AI is thinking!");
+					for (JButton i: slot) {
+						i.setVisible(true);
+					}
+					selectPanel.setVisible(false);
+					human = 'O';
+					ai = 'X';
+					input = true;
+					break;
+				case "retry":
+					resetGame();
+					break;
+				}
+			}
+		};
+		
 		
 		ActionListener click = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e){
 				String action = e.getActionCommand();
-				if (action.equals("retry")) {
-					resetGame();
-				} else if (action.equals("red")) {
-					for (JButton i: slot) {
-						i.setVisible(true);
-						selectPanel.setVisible(false);
-						human = 'X';
-						ai = 'O';
-					}
-					
-				} else if (action.equals("blue")) {
-					for (JButton i: slot) {
-						i.setVisible(true);
-						selectPanel.setVisible(false);
-						human = 'O';
-						ai = 'X';
-						input = true;
-					}
-				} else {
+				if (input == false) {
 					if (place(human, Integer.valueOf(action)) == true) {
-						if (input == false) {
-							undo(Integer.valueOf(action));
-							place(human, Integer.valueOf(action));
-							count++;
-							updateBoard();
-							stat.setText("AI is thinking...");
-							if (count == 42) {
-								endGame('.');
-							}
-							if (checkWin(human) == true) {
-								endGame(human);
-							} else {
-								input = true;
-							}
+						undo(Integer.valueOf(action));
+						place(human, Integer.valueOf(action));
+						turn++;
+						updateBoard();
+						stat.setText("AI is thinking...");
+						if (turn == 42) {
+							endGame('.');
+						}
+						if (checkWin(human) == true) {
+							endGame(human);
+						} else {
+							input = true;
 						}
 					}
-					
 				}
 			}
 		};
@@ -126,13 +154,13 @@ public class Game {
 		window.setLayout(null);
 		window.setResizable(false);
 		
-		selectPanel.setBounds(210,360,300,150);
+		selectPanel.setBounds(155,360,410,150);
 		selectPanel.setBackground(new Color(206, 206, 206));
 		selectPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 		window.add(selectPanel);
 		
-		select.setFont(new Font("Arial", Font.PLAIN, 30));
-		select.setText("Choose a color");
+		select.setFont(new Font("Arial", Font.PLAIN, 22));
+		select.setText("Choose your difficulty! (Current: Easy)");
 		selectPanel.add(select);
 		
 		info.setBounds(8, 8, 712, 64);
@@ -140,10 +168,10 @@ public class Game {
 		info.setBorder(BorderFactory.createLineBorder(Color.black));
 		window.add(info);
 			
-		stat.setText("Player's turn to move!");
+		stat.setText("Choose your opponent!");
 		info.add(stat);
 		
-		result.setBounds(262,400,200,100);
+		result.setBounds(262,410,200,80);
 		result.setBackground(new Color(206, 206, 206));
 		result.setBorder(BorderFactory.createLineBorder(Color.black));
 		result.setVisible(false);
@@ -154,7 +182,7 @@ public class Game {
 		
 		playAgain.setText("Play again?");
 		playAgain.setActionCommand("retry");
-		playAgain.addActionListener(click);
+		playAgain.addActionListener(menu);
 		result.add(playAgain);
 		
 		gamePanel.setBounds(8, 88, 704, 664);
@@ -163,13 +191,33 @@ public class Game {
 		gamePanel.setLayout(new GridLayout(7,7));
 		window.add(gamePanel);
 		
+		selectDiff[0] = new JButton();
+		selectDiff[1] = new JButton();
+		selectDiff[2] = new JButton();
+		selectDiff[3] = new JButton();
+		selectDiff[0].setText("Easy");
+		selectDiff[1].setText("Medium");
+		selectDiff[2].setText("Hard");
+		selectDiff[3].setText("Expert");
+		selectDiff[0].addActionListener(menu);
+		selectDiff[1].addActionListener(menu);
+		selectDiff[2].addActionListener(menu);
+		selectDiff[3].addActionListener(menu);
+		selectDiff[0].setActionCommand("easy");
+		selectDiff[1].setActionCommand("medium");
+		selectDiff[2].setActionCommand("hard");
+		selectDiff[3].setActionCommand("expert");
+		selectPanel.add(selectDiff[0]);
+		selectPanel.add(selectDiff[1]);
+		selectPanel.add(selectDiff[2]);
+		selectPanel.add(selectDiff[3]);
 		
 		selectColor[0] = new JButton();
 		selectColor[1] = new JButton();
-		selectColor[0].setText("Red player (goes first)");
-		selectColor[1].setText("Blue player (goes second)");
-		selectColor[0].addActionListener(click);
-		selectColor[1].addActionListener(click);
+		selectColor[0].setText("Red (Player goes first)");
+		selectColor[1].setText("Blue (Player goes second)");
+		selectColor[0].addActionListener(menu);
+		selectColor[1].addActionListener(menu);
 		selectColor[0].setActionCommand("red");
 		selectColor[1].setActionCommand("blue");
 		selectColor[0].setFocusable(false);
@@ -345,7 +393,7 @@ public class Game {
 	}
 	
 	public void resetGame() {
-		count = 0;
+		turn = 0;
 		stat.setText("Player's turn to move!");
 		result.setVisible(false);
 		selectPanel.setVisible(true);
@@ -373,10 +421,6 @@ public class Game {
 		
 		List<Integer> moves = getAvailableMoves();
 		List<Integer> bestMoves = new ArrayList<>();
-		
-		if (board[5][3] == '.') {
-			return 3;
-		}
 		
 		for (int i = 0; i < moves.size(); i++) {
 			place(ai, moves.get(i));
@@ -478,7 +522,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score -= 60;
+				score -= 40;
 				break;
 			case 3:
 				score -= 90;
@@ -502,7 +546,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score += 60;
+				score += 40;
 				break;
 			case 3:
 				score += 90;
@@ -531,7 +575,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score -= 60;
+				score -= 40;
 				break;
 			case 3:
 				score -= 90;
@@ -555,7 +599,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score += 60;
+				score += 40;
 				break;
 			case 3:
 				score += 90;
@@ -584,7 +628,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score -= 60;
+				score -= 40;
 				break;
 			case 3:
 				score -= 90;
@@ -608,7 +652,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score += 60;
+				score += 40;
 				break;
 			case 3:
 				score += 90;
@@ -637,7 +681,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score -= 60;
+				score -= 40;
 				break;
 			case 3:
 				score -= 90;
@@ -661,7 +705,7 @@ public class Game {
 			}
 			switch (count) {
 			case 2:
-				score += 60;
+				score += 40;
 				break;
 			case 3:
 				score += 90;
